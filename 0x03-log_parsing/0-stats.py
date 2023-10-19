@@ -5,7 +5,7 @@ def print_statistics(total_size, status_codes):
     print("File size: {:d}".format(total_size))
     for code in sorted(status_codes.keys()):
         if status_codes[code] > 0:
-            print("{:d}: {:d}".format(code, status_codes[code])
+            print("{:d}: {:d}".format(code, status_codes[code]))
 
 def main():
     total_size = 0
