@@ -1,33 +1,30 @@
 #!/usr/bin/python3
 import sys
 
-def print_statistics(total_size, status_codes):
-    print("File size: {:d}".format(total_size))
-    for code in sorted(status_codes.keys()):
-        if status_codes[code] > 0:
-            print("{:d}: {:d}".format(code, status_codes[code]))
-
-def main():
-    total_size = 0
-    status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-    lines_processed = 0
-
+if __name__ == "__main__":
+    status_codes = [200, 301, 400, 401, 403, 404, 405, 500]
+    stats = {status: 0 for status in status_codes}
+    size = 0
     try:
-        for line in sys.stdin:
-            tokens = line.split()
-            if len(tokens) == 7:
-                status_code = int(tokens[6])
-                if status_code in status_codes:
-                    total_size += int(tokens[6])
-                    status_codes[status_code] += 1
-                    lines_processed += 1
-            if lines_processed % 10 == 0:
-                print_statistics(total_size, status_codes)
+        for i, line in enumerate(sys.stdin, 1):
+            split_line = line.split(' ')
+            if len(split_line) < 2:
+                continue
+            if split_line[-2].isdigit():
+                status = int(split_line[-2])
+                if status in status_codes:
+                    stats[status] += 1
+            if split_line[-1].isdigit():
+                size += int(split_line[-1])
+            if i % 10 == 0:
+                print("File size: {}".format(size))
+                for status in sorted(stats.keys()):
+                    if stats[status] > 0:
+                        print("{}: {}".format(status, stats[status]))
     except KeyboardInterrupt:
         pass
-
-    print_statistics(total_size, status_codes)
-
-if __name__ == "__main__":
-    main()
-
+    finally:
+        print("File size: {}".format(size))
+        for status in sorted(stats.keys()):
+            if stats[status] > 0:
+                print("{}: {}".format(status, stats[status]))
