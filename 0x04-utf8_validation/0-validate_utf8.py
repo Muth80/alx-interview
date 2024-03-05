@@ -1,51 +1,34 @@
 #!/usr/bin/python3
-"""
-This script has a method that validates if a dataset represents a valid UTF-8 encoding.
-"""
 
 def validUTF8(data):
+    """
+    Validates a dataset of integers representing UTF-8 encoding.
 
-    # Number of bytes in the current UTF-8 character
-    n_bytes = 0
+    Args:
+        data: A list of integers, each representing a single byte of UTF-8 data.
 
-    # Masks to check the most significant bit and the two most significant bits
-    mask1 = 1 << 7
-    mask2 = 1 << 6
+    Returns:
+        True if the 'data' represents valid UTF-8 encoding, False otherwise.
+    """
 
-    for num in data:
+    num_bytes = 0  # Counter for bytes in a multi-byte character 
 
-        # Mask to fetch the 8 least significant bits of num
-        mask = (1 << 8) - 1
-        num = num & mask
-
-        # If this is a character with n bytes in UTF-8, then we need to process n bytes.
-        if n_bytes == 0:
-            for i in range(5):
-                if (num & (mask1 >> i)) == 0:
-                    break
-                n_bytes += 1
-
-            if n_bytes == 0:
+    for byte in data:
+        mask = 1 << 7  # Mask to check the most significant bit
+        if num_bytes == 0: 
+            # First byte of a character:
+            while byte & mask:  
+                num_bytes += 1 
+                mask >>= 1
+            if num_bytes == 0:  # 1-byte character
                 continue
-
-            if n_bytes == 1 or n_bytes > 4:
-                return False
-
+            if num_bytes == 1 or num_bytes > 4:  # Invalid start byte
+                return False  
         else:
-            if not (num & mask1 and not (num & mask2)):
+            # Continuation byte:
+            if not (byte & mask == 128 and byte & ~mask == 64):
                 return False
+            num_bytes -= 1  # Decrease count for multi-byte character
 
-        n_bytes -= 1
-
-    return n_bytes == 0
-
-# Test cases
-data = [65]
-print(validUTF8(data))  # Output should be True
-
-data = [80, 121, 116, 104, 111, 110, 32, 105, 115, 32, 99, 111, 111, 108, 33]
-print(validUTF8(data))  # Output should be True
-
-data = [229, 65, 127, 256]
-print(validUTF8(data))  # Output should be False
+    return num_bytes == 0  # Valid if all multi-byte characters are complete 
 
